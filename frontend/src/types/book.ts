@@ -9,10 +9,9 @@ export type Book = {
   id: number;
   title: string;
   author: string | null;
-  isbn: string | null;
   thumbnail_url: string | null;
-  description: string | null;
   status: BookStatus;
+  memo: string | null;
   tags: Tag[];
   created_at: string;
   updated_at: string;
@@ -21,6 +20,8 @@ export type Book = {
 export type CreateBookInput = {
   title: string;
   author?: string;
+  thumbnail_url?: string;
   status: BookStatus;
+  memo?: string;
   tag_ids?: number[];
 };

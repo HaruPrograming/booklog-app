@@ -21,10 +21,9 @@ class BookController extends Controller
         $validated = $request->validate([
             'title'         => 'required|string|max:255',
             'author'        => 'nullable|string|max:255',
-            'isbn'          => 'nullable|string|max:20',
             'thumbnail_url' => 'nullable|url',
-            'description'   => 'nullable|string',
             'status'        => 'required|in:interested,reading,completed',
+            'memo'          => 'nullable|string',
             'tag_ids'       => 'nullable|array',
             'tag_ids.*'     => 'integer|exists:tags,id',
         ]);
@@ -39,10 +38,9 @@ class BookController extends Controller
         $validated = $request->validate([
             'title'         => 'sometimes|required|string|max:255',
             'author'        => 'nullable|string|max:255',
-            'isbn'          => 'nullable|string|max:20',
             'thumbnail_url' => 'nullable|url',
-            'description'   => 'nullable|string',
             'status'        => 'sometimes|required|in:interested,reading,completed',
+            'memo'          => 'nullable|string',
             'tag_ids'       => 'nullable|array',
             'tag_ids.*'     => 'integer|exists:tags,id',
         ]);

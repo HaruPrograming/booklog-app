@@ -26,6 +26,7 @@ export function BookForm({ editingBook, onSaved }: Props) {
   const [isbnLoading, setIsbnLoading] = useState(false);
   const [isbnError, setIsbnError] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState(editingBook?.thumbnail_url ?? '');
+  const [memo, setMemo] = useState(editingBook?.memo ?? '');
 
   const isEditing = editingBook != null;
 
@@ -82,14 +83,18 @@ export function BookForm({ editingBook, onSaved }: Props) {
         await updateBook(editingBook.id, {
           title: title.trim(),
           author: author.trim() || undefined,
+          thumbnail_url: thumbnailUrl || undefined,
           status,
+          memo: memo.trim() || undefined,
           tag_ids: selectedTagIds,
         });
       } else {
         const input: CreateBookInput = {
           title: title.trim(),
           author: author.trim() || undefined,
+          thumbnail_url: thumbnailUrl || undefined,
           status,
+          memo: memo.trim() || undefined,
           tag_ids: selectedTagIds.length > 0 ? selectedTagIds : undefined,
         };
         await createBook(input);
@@ -244,6 +249,17 @@ export function BookForm({ editingBook, onSaved }: Props) {
             追加
           </button>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-sm font-medium text-brown-700">メモ</label>
+        <textarea
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+          placeholder="感想・メモを入力"
+          rows={3}
+          className="border border-brown-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400 resize-none"
+        />
       </div>
 
       {error && <p className="text-red-500 text-sm">{error}</p>}

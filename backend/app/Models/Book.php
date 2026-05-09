@@ -10,10 +10,9 @@ class Book extends Model
     protected $fillable = [
         'title',
         'author',
-        'isbn',
         'thumbnail_url',
-        'description',
         'status',
+        'memo',
     ];
 
     public function tags(): BelongsToMany

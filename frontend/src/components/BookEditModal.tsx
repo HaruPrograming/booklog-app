@@ -17,6 +17,7 @@ export function BookEditModal({ book, onClose, onUpdated }: Props) {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>(book.tags.map((t) => t.id));
   const [newTagName, setNewTagName] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [memo, setMemo] = useState(book.memo ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -53,6 +54,7 @@ export function BookEditModal({ book, onClose, onUpdated }: Props) {
         title: title.trim(),
         author: author.trim() || undefined,
         status,
+        memo: memo.trim() || undefined,
         tag_ids: selectedTagIds,
       });
       onUpdated();
@@ -164,6 +166,17 @@ export function BookEditModal({ book, onClose, onUpdated }: Props) {
                 追加
               </button>
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-brown-700">メモ</label>
+            <textarea
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              placeholder="感想・メモを入力"
+              rows={3}
+              className="border border-brown-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400 resize-none"
+            />
           </div>
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
