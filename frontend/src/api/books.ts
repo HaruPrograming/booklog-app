@@ -17,3 +17,18 @@ export async function createBook(input: CreateBookInput): Promise<Book> {
   if (!res.ok) throw new Error('Failed to create book');
   return res.json();
 }
+
+export async function updateBook(id: number, input: Partial<CreateBookInput>): Promise<Book> {
+  const res = await fetch(`${API_BASE}/books/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error('Failed to update book');
+  return res.json();
+}
+
+export async function deleteBook(id: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/books/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Failed to delete book');
+}
