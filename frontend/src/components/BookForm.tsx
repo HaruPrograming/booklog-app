@@ -3,6 +3,7 @@ import type { Book, BookStatus, CreateBookInput, Tag } from '../types/book';
 import { createBook, updateBook } from '../api/books';
 import { fetchTags, createTag } from '../api/tags';
 import { searchByIsbn } from '../api/isbn';
+import { BarcodeScanner } from './BarcodeScanner';
 
 type Props = {
   editingBook?: Book | null;
@@ -21,23 +22,25 @@ export function BookForm({ editingBook, onSaved }: Props) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isbn, setIsbn] = useState('');
+  const [showCamera, setShowCamera] = useState(false);
   const [isbnLoading, setIsbnLoading] = useState(false);
   const [isbnError, setIsbnError] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState(editingBook?.thumbnail_url ?? '');
 
   const isEditing = editingBook != null;
 
-  const handleIsbnSearch = async () => {
-    if (!isbn.trim()) return;
+  const handleBarcodeDetect = async (isbn: string) => {
+    setShowCamera(false);
     setIsbnLoading(true);
     setIsbnError('');
     try {
-      const result = await searchByIsbn(isbn.trim());
+      const result = await searchByIsbn(isbn);
       if (result === null) {
         setIsbnError('本が見つかりませんでした');
       } else {
         setTitle(result.title);
         if (result.author) setAuthor(result.author);
+        if (result.thumbnail_url) setThumbnailUrl(result.thumbnail_url);
       }
     } catch {
       setIsbnError('検索に失敗しました。もう一度お試しください。');
@@ -101,34 +104,51 @@ export function BookForm({ editingBook, onSaved }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4">
-      {isEditing && (
-        <p className="text-xs text-brown-400 text-center">編集中: {editingBook.title}</p>
-      )}
-
-      {!isEditing && (
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-brown-700">ISBNで検索</label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={isbn}
-              onChange={(e) => { setIsbn(e.target.value); setIsbnError(''); }}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleIsbnSearch(); } }}
-              placeholder="例: 9784297135898"
-              className="flex-1 border border-brown-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
-            />
-            <button
-              type="button"
-              onClick={handleIsbnSearch}
-              disabled={isbnLoading || !isbn.trim()}
-              className="px-4 py-3 bg-brown-600 text-white rounded-xl text-sm font-semibold disabled:opacity-50 active:bg-brown-700"
-            >
-              {isbnLoading ? '検索中...' : '検索'}
-            </button>
+      <div className="flex flex-col items-center gap-2">
+        {showCamera ? (
+          <BarcodeScanner
+            onDetect={handleBarcodeDetect}
+            onClose={() => setShowCamera(false)}
+          />
+        ) : (
+          <div className="relative w-64 h-64">
+            {isbnLoading && (
+              <div className="absolute inset-0 bg-brown-50/90 rounded-2xl flex flex-col items-center justify-center gap-2 z-10">
+                <span className="text-3xl text-brown-400 animate-spin">⟳</span>
+                <span className="text-xs text-brown-500">検索中...</span>
+              </div>
+            )}
+            {thumbnailUrl ? (
+              <>
+                <img
+                  src={thumbnailUrl}
+                  alt="book cover"
+                  className="w-full h-full object-cover rounded-2xl"
+                />
+                <button
+                  type="button"
+                  onClick={() => { setShowCamera(true); setIsbnError(''); }}
+                  disabled={isbnLoading}
+                  className="absolute top-1.5 right-1.5 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center text-base disabled:opacity-50"
+                >
+                  ✏️
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { setShowCamera(true); setIsbnError(''); }}
+                disabled={isbnLoading}
+                className="w-full h-full rounded-2xl border-2 border-dashed border-brown-300 bg-brown-50 flex flex-col items-center justify-center gap-2 active:bg-brown-100 disabled:opacity-50"
+              >
+                <span className="text-4xl text-brown-300">＋</span>
+                <span className="text-xs text-brown-400">バーコードをスキャン</span>
+              </button>
+            )}
           </div>
-          {isbnError && <p className="text-red-500 text-sm">{isbnError}</p>}
-        </div>
-      )}
+        )}
+        {isbnError && <p className="text-red-500 text-sm text-center">{isbnError}</p>}
+      </div>
 
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-brown-700">タイトル *</label>
