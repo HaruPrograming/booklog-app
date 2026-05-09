@@ -1,6 +1,6 @@
 import type { Book, CreateBookInput } from '../types/book';
 
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api';
 
 export async function fetchBooks(): Promise<Book[]> {
   const res = await fetch(`${API_BASE}/books`);
