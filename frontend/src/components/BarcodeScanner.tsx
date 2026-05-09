@@ -9,21 +9,27 @@ type Props = {
 export function BarcodeScanner({ onDetect, onClose }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [detected, setDetected] = useState(false);
+  const detectedRef = useRef(false);
 
   useEffect(() => {
     const reader = new BrowserMultiFormatReader();
 
     reader
-      .decodeFromVideoDevice(undefined, videoRef.current!, (result) => {
-        if (result && !detected) {
-          const text = result.getText();
-          if (/^\d{13}$/.test(text) || /^\d{10}$/.test(text)) {
-            setDetected(true);
-            BrowserMultiFormatReader.releaseAllStreams();
-            setTimeout(() => onDetect(text), 400);
+      .decodeFromConstraints(
+        { video: { facingMode: 'environment' } },
+        videoRef.current!,
+        (result) => {
+          if (result && !detectedRef.current) {
+            const text = result.getText();
+            if (/^\d{13}$/.test(text) || /^\d{10}$/.test(text)) {
+              detectedRef.current = true;
+              setDetected(true);
+              BrowserMultiFormatReader.releaseAllStreams();
+              setTimeout(() => onDetect(text), 400);
+            }
           }
         }
-      })
+      )
       .catch(() => {});
 
     return () => {
