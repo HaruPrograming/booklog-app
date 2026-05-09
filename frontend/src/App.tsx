@@ -56,7 +56,7 @@ function App() {
         ) : loading ? (
           <p className="text-center text-gray-400 py-12">読み込み中...</p>
         ) : (
-          <BookList books={books} />
+          <BookList books={books} onUpdated={loadBooks} />
         )}
       </main>
     </div>
