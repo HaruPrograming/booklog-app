@@ -24,6 +24,8 @@ class BookController extends Controller
             'thumbnail_url' => 'nullable|url',
             'description'   => 'nullable|string',
             'status'        => 'required|in:interested,reading,completed',
+            'tag_ids'       => 'nullable|array',
+            'tag_ids.*'     => 'integer|exists:tags,id',
         ]);
 
         $book = $this->bookService->create($validated);

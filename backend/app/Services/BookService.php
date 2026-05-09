@@ -9,11 +9,20 @@ class BookService
 {
     public function getAll(): Collection
     {
-        return Book::latest()->get();
+        return Book::with('tags')->latest()->get();
     }
 
     public function create(array $data): Book
     {
-        return Book::create($data);
+        $tagIds = $data['tag_ids'] ?? [];
+        unset($data['tag_ids']);
+
+        $book = Book::create($data);
+
+        if (!empty($tagIds)) {
+            $book->tags()->sync($tagIds);
+        }
+
+        return $book->load('tags');
     }
 }
