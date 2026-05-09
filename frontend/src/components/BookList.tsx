@@ -43,6 +43,18 @@ export function BookList({ books }: Props) {
           {book.author && (
             <span className="text-sm text-gray-500">{book.author}</span>
           )}
+          {book.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {book.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
+                >
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          )}
         </li>
       ))}
     </ul>
