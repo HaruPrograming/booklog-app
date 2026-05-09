@@ -3,6 +3,7 @@ import type { Book } from './types/book';
 import { fetchBooks } from './api/books';
 import { BookForm } from './components/BookForm';
 import { BookList } from './components/BookList';
+import { Header } from './components/Header';
 
 type View = 'list' | 'form';
 
@@ -10,6 +11,7 @@ function App() {
   const [books, setBooks] = useState<Book[]>([]);
   const [view, setView] = useState<View>('list');
   const [loading, setLoading] = useState(true);
+  const [editingBook, setEditingBook] = useState<Book | null>(null);
 
   const loadBooks = async () => {
     try {
@@ -24,39 +26,37 @@ function App() {
     loadBooks();
   }, []);
 
-  const handleCreated = async () => {
+  const handleSaved = async () => {
     await loadBooks();
     setView('list');
+    setEditingBook(null);
+  };
+
+  const handleEdit = (book: Book) => {
+    setEditingBook(book);
+    setView('form');
+  };
+
+  const handleChangeView = (v: View) => {
+    setView(v);
+    if (v === 'list') setEditingBook(null);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 max-w-md mx-auto">
-      <header className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between sticky top-0 z-10">
-        <h1 className="text-lg font-bold text-gray-900">読書記録</h1>
-        {view === 'list' ? (
-          <button
-            onClick={() => setView('form')}
-            className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg active:bg-blue-700"
-          >
-            + 登録
-          </button>
-        ) : (
-          <button
-            onClick={() => setView('list')}
-            className="text-gray-500 text-sm px-4 py-2"
-          >
-            キャンセル
-          </button>
-        )}
-      </header>
+    <div className="min-h-screen bg-brown-50">
+      <Header view={view} onChangeView={handleChangeView} />
 
-      <main>
+      <main className="max-w-sm mx-auto">
         {view === 'form' ? (
-          <BookForm onCreated={handleCreated} />
+          <BookForm
+            key={editingBook?.id ?? 'new'}
+            editingBook={editingBook}
+            onSaved={handleSaved}
+          />
         ) : loading ? (
-          <p className="text-center text-gray-400 py-12">読み込み中...</p>
+          <p className="text-center text-brown-400 py-12">読み込み中...</p>
         ) : (
-          <BookList books={books} onUpdated={loadBooks} />
+          <BookList books={books} onUpdated={loadBooks} onEdit={handleEdit} />
         )}
       </main>
     </div>
