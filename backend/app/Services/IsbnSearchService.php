@@ -33,7 +33,7 @@ class IsbnSearchService
 
         return [
             'title'         => $summary['title'],
-            'author'        => $summary['author'] !== '' ? str_replace(',', ' ', $summary['author']) : null,
+            'author'        => $summary['author'] !== '' ? trim(preg_replace('/\s+\d{4}-\d*/u', '', str_replace(',', ' ', $summary['author']))) : null,
             'thumbnail_url' => $summary['cover'] !== '' ? ($summary['cover'] ?? null) : null,
             'description'   => null,
         ];
