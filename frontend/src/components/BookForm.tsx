@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Book, BookStatus, CreateBookInput, Tag } from '../types/book';
 import { createBook, updateBook } from '../api/books';
 import { fetchTags, createTag } from '../api/tags';
+import { searchByIsbn } from '../api/isbn';
 
 type Props = {
   editingBook?: Book | null;
@@ -20,8 +21,30 @@ export function BookForm({ editingBook, onSaved }: Props) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isbn, setIsbn] = useState('');
+  const [isbnLoading, setIsbnLoading] = useState(false);
+  const [isbnError, setIsbnError] = useState('');
 
   const isEditing = editingBook != null;
+
+  const handleIsbnSearch = async () => {
+    if (!isbn.trim()) return;
+    setIsbnLoading(true);
+    setIsbnError('');
+    try {
+      const result = await searchByIsbn(isbn.trim());
+      if (result === null) {
+        setIsbnError('本が見つかりませんでした');
+      } else {
+        setTitle(result.title);
+        if (result.author) setAuthor(result.author);
+      }
+    } catch {
+      setIsbnError('検索に失敗しました。もう一度お試しください。');
+    } finally {
+      setIsbnLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchTags().then(setTags).catch(() => {});
@@ -80,6 +103,31 @@ export function BookForm({ editingBook, onSaved }: Props) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-4">
       {isEditing && (
         <p className="text-xs text-brown-400 text-center">編集中: {editingBook.title}</p>
+      )}
+
+      {!isEditing && (
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-brown-700">ISBNで検索</label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={isbn}
+              onChange={(e) => { setIsbn(e.target.value); setIsbnError(''); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleIsbnSearch(); } }}
+              placeholder="例: 9784297135898"
+              className="flex-1 border border-brown-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
+            />
+            <button
+              type="button"
+              onClick={handleIsbnSearch}
+              disabled={isbnLoading || !isbn.trim()}
+              className="px-4 py-3 bg-brown-600 text-white rounded-xl text-sm font-semibold disabled:opacity-50 active:bg-brown-700"
+            >
+              {isbnLoading ? '検索中...' : '検索'}
+            </button>
+          </div>
+          {isbnError && <p className="text-red-500 text-sm">{isbnError}</p>}
+        </div>
       )}
 
       <div className="flex flex-col gap-1">
