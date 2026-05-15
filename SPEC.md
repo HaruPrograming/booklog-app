@@ -33,10 +33,10 @@
 | フェーズ | 目的 | 状態 |
 |---|---|---|
 | Phase 1 | 本の登録・一覧表示 | 完了 |
-| Phase 2 | タグによる分類管理 | 実装中 |
-| Phase 3 | ISBNから本情報を自動取得 | 未着手 |
-| Phase 4 | バーコードでISBN入力を自動化 | 未着手 |
-| Phase 5 | 読書記録強化（メモ・引用） | 未着手 |
+| Phase 2 | タグによる分類管理 | 完了 |
+| Phase 3 | ISBNから本情報を自動取得 | 完了 |
+| Phase 4 | バーコードでISBN入力を自動化 | 完了 |
+| Phase 5 | 読書記録強化（メモ・引用） | 完了 |
 
 ---
 
@@ -52,12 +52,14 @@
 | カラム | 型 |
 |---|---|
 | id | bigint (PK) |
+| google_books_id | varchar (nullable) |
 | title | varchar |
 | author | varchar |
 | isbn | varchar |
 | thumbnail_url | varchar |
 | description | text |
 | status | enum(interested, reading, completed) |
+| memo | text (nullable) |
 | created_at | timestamp |
 
 ---
@@ -89,14 +91,12 @@
 
 ---
 
-## Phase 3: ISBN検索
+## Phase 3: ISBN・キーワード検索
 
 ### 実装内容
-- ISBN入力 → API検索 → 本情報取得 → 保存
-
-### API優先順位
-1. OpenBD
-2. Google Books API
+- ISBN入力 → OpenBD → 本情報取得 → 保存
+- キーワード入力 → Google Books API → 検索結果一覧 → 気になる保存
+- バーコードスキャンでISBN自動入力（Phase 4 と連携）
 
 ---
 
@@ -114,18 +114,9 @@
 
 ## Phase 5: 読書記録強化
 
-### book_notesテーブル
-
-| カラム | 型 |
-|---|---|
-| id | bigint (PK) |
-| book_id | bigint (FK) |
-| content | text |
-| page | int |
-| created_at | timestamp |
-
-### 機能
-- 感想・引用・学びメモ・ページ番号管理
+### 実装内容
+- booksテーブルの `memo` カラムに1冊1メモで管理
+- 登録フォーム・編集モーダルからメモ入力可能
 
 ---
 
