@@ -4,11 +4,12 @@ import { fetchBooks, createBook } from './api/books';
 import { searchGoogleBooks } from './api/googleBooksSearch';
 import { BookForm } from './components/BookForm';
 import { BookList } from './components/BookList';
+import { BookDetailPage } from './components/BookDetailPage';
 import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
 import { SearchResultCard } from './components/SearchResultCard';
 
-type View = 'list' | 'form' | 'search';
+type View = 'list' | 'form' | 'search' | 'detail';
 
 function App() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -18,6 +19,7 @@ function App() {
   const [searchResults, setSearchResults] = useState<GoogleBookResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<GoogleBookResult | null>(null);
 
   const loadBooks = async () => {
     try {
@@ -66,6 +68,15 @@ function App() {
     setView('list');
   };
 
+  const handleOpenDetail = (book: GoogleBookResult) => {
+    setSelectedBook(book);
+    setView('detail');
+  };
+
+  const handleBackFromDetail = () => {
+    setView('search');
+  };
+
   const handleSaveFromSearch = async (book: GoogleBookResult) => {
     await createBook({
       google_books_id: book.google_books_id,
@@ -83,10 +94,19 @@ function App() {
 
   return (
     <div className="min-h-screen bg-brown-50">
-      <Header view={view} onChangeView={handleChangeView} />
+      {view !== 'detail' && <Header view={view} onChangeView={handleChangeView} />}
+
+      {view === 'detail' && selectedBook && (
+        <BookDetailPage
+          book={selectedBook}
+          isSaved={savedGoogleIds.has(selectedBook.google_books_id)}
+          onSave={handleSaveFromSearch}
+          onBack={handleBackFromDetail}
+        />
+      )}
 
       <main className="max-w-sm mx-auto">
-        {view === 'form' ? (
+        {view === 'detail' ? null : view === 'form' ? (
           <BookForm
             key={editingBook?.id ?? 'new'}
             editingBook={editingBook}
@@ -108,6 +128,7 @@ function App() {
                     book={book}
                     isSaved={savedGoogleIds.has(book.google_books_id)}
                     onSave={handleSaveFromSearch}
+                    onDetail={handleOpenDetail}
                   />
                 ))}
               </>
