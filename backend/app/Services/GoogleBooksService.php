@@ -48,34 +48,38 @@ class GoogleBooksService
 
         $seriesId = $item['seriesInfo']['bookSeries'][0]['seriesId'] ?? null;
         if ($seriesId) {
-            $formatted['series_volume_count'] = $this->getSeriesVolumeCount($seriesId, $params);
+            $seriesInfo = $this->getSeriesInfo($seriesId, $params);
+            $formatted['series_volume_count']     = $seriesInfo['volume_count'];
+            $formatted['latest_published_date']   = $seriesInfo['latest_published_date'];
         }
 
         return $formatted;
     }
 
-    private function getSeriesVolumeCount(string $seriesId, array $baseParams): int
+    private function getSeriesInfo(string $seriesId, array $baseParams): array
     {
         $params = array_merge($baseParams, [
             'q'          => "seriesid:{$seriesId}",
             'maxResults' => 40,
-            'fields'     => 'items/seriesInfo/bookSeries/orderNumber',
+            'fields'     => 'items/seriesInfo/bookSeries/orderNumber,items/volumeInfo/publishedDate',
         ]);
 
         $response = Http::get($this->baseUrl, $params);
         if (!$response->successful()) {
-            return 0;
+            return ['volume_count' => 0, 'latest_published_date' => null];
         }
 
-        $max = 0;
+        $max         = 0;
+        $latestDate  = null;
         foreach ($response->json('items', []) as $item) {
             $order = (int) ($item['seriesInfo']['bookSeries'][0]['orderNumber'] ?? 0);
             if ($order > $max) {
-                $max = $order;
+                $max        = $order;
+                $latestDate = $item['volumeInfo']['publishedDate'] ?? null;
             }
         }
 
-        return $max;
+        return ['volume_count' => $max, 'latest_published_date' => $latestDate];
     }
 
     private function formatBook(array $item): array
@@ -110,7 +114,8 @@ class GoogleBooksService
             'published_date'      => $info['publishedDate'] ?? null,
             'series_name'         => $seriesName,
             'volume_number'       => $volumeNumber,
-            'series_volume_count' => null,
+            'series_volume_count'   => null,
+            'latest_published_date' => null,
         ];
     }
 }
