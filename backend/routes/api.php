@@ -13,6 +13,7 @@ Route::delete('/books/{book}', [BookController::class, 'destroy']);
 
 Route::get('/books/isbn-search', [IsbnSearchController::class, 'search']);
 Route::get('/books/keyword-search', [GoogleBooksSearchController::class, 'search']);
+Route::get('/google-books/{id}', [GoogleBooksSearchController::class, 'show']);
 
 Route::get('/tags', [TagController::class, 'index']);
 Route::post('/tags', [TagController::class, 'store']);

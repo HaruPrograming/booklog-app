@@ -18,4 +18,15 @@ class GoogleBooksSearchController extends Controller
 
         return response()->json(['books' => $books]);
     }
+
+    public function show(string $id): JsonResponse
+    {
+        $book = $this->googleBooksService->getDetail($id);
+
+        if (!$book) {
+            return response()->json(['message' => 'Not Found'], 404);
+        }
+
+        return response()->json(['book' => $book]);
+    }
 }
