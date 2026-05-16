@@ -25,7 +25,7 @@ export function SearchBar({ onSearch, onClear }: Props) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="タイトル・著者名で検索"
-        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brown-400"
+        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:border-brown-400"
       />
       <button
         type="submit"
