@@ -21,7 +21,7 @@ export function BarcodeScanner({ onDetect, onClose }: Props) {
         (result) => {
           if (result && !detectedRef.current) {
             const text = result.getText();
-            if (/^\d{13}$/.test(text) || /^\d{10}$/.test(text)) {
+            if ((/^\d{13}$/.test(text) && (text.startsWith('978') || text.startsWith('979'))) || /^\d{10}$/.test(text)) {
               detectedRef.current = true;
               setDetected(true);
               BrowserMultiFormatReader.releaseAllStreams();
