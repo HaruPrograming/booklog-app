@@ -8,9 +8,9 @@ class GoogleBooksService
 {
     private string $baseUrl = 'https://www.googleapis.com/books/v1/volumes';
 
-    public function search(string $query, int $maxResults = 20): array
+    public function search(string $query, int $maxResults = 20, int $startIndex = 0): array
     {
-        $params = ['q' => $query, 'maxResults' => $maxResults];
+        $params = ['q' => $query, 'maxResults' => $maxResults, 'startIndex' => $startIndex];
 
         $apiKey = config('services.google_books.key', '');
         if ($apiKey) {

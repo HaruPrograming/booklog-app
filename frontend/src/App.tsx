@@ -19,6 +19,8 @@ function App() {
   const [searchResults, setSearchResults] = useState<GoogleBookResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchHasMore, setSearchHasMore] = useState(false);
+  const [loadMoreLoading, setLoadMoreLoading] = useState(false);
   const [selectedBook, setSelectedBook] = useState<GoogleBookResult | null>(null);
 
   const loadBooks = async () => {
@@ -53,18 +55,32 @@ function App() {
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     setSearchLoading(true);
+    setSearchHasMore(false);
     setView('search');
     try {
-      const results = await searchGoogleBooks(query);
-      setSearchResults(results);
+      const { books, has_more } = await searchGoogleBooks(query, 0);
+      setSearchResults(books);
+      setSearchHasMore(has_more);
     } finally {
       setSearchLoading(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    setLoadMoreLoading(true);
+    try {
+      const { books, has_more } = await searchGoogleBooks(searchQuery, searchResults.length);
+      setSearchResults((prev) => [...prev, ...books]);
+      setSearchHasMore(has_more);
+    } finally {
+      setLoadMoreLoading(false);
     }
   };
 
   const handleSearchClear = () => {
     setSearchResults([]);
     setSearchQuery('');
+    setSearchHasMore(false);
     setView('list');
   };
 
@@ -132,6 +148,17 @@ function App() {
                     onDetail={handleOpenDetail}
                   />
                 ))}
+                {searchHasMore && (
+                  <div className="px-4 py-4 text-center">
+                    <button
+                      onClick={handleLoadMore}
+                      disabled={loadMoreLoading}
+                      className="w-full py-2.5 rounded-lg border border-brown-300 text-sm text-brown-600 hover:bg-brown-100 disabled:opacity-50 transition-colors"
+                    >
+                      {loadMoreLoading ? '読み込み中...' : 'もっと見る'}
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </>
