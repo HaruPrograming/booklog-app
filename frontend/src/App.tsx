@@ -113,6 +113,14 @@ function App() {
     <div className="min-h-screen bg-brown-50">
       {view !== 'detail' && <Header view={view} onChangeView={handleChangeView} />}
 
+      {view === 'search' && (
+        <div className="sticky top-[100px] z-10 bg-brown-50 border-b border-gray-200">
+          <div className="max-w-sm mx-auto">
+            <SearchBar onSearch={handleSearch} onClear={handleSearchClear} />
+          </div>
+        </div>
+      )}
+
       {view === 'detail' && selectedBook && (
         <BookDetailPage
           book={selectedBook}
@@ -131,7 +139,6 @@ function App() {
           />
         ) : view === 'search' ? (
           <>
-            <SearchBar onSearch={handleSearch} onClear={handleSearchClear} />
             {searchLoading ? (
               <p className="text-center text-gray-400 py-12">検索中...</p>
             ) : (
