@@ -15,6 +15,8 @@ export type Book = {
   description: string | null;
   status: BookStatus;
   memo: string | null;
+  series_name: string | null;
+  volume_number: number | null;
   tags: Tag[];
   created_at: string;
   updated_at: string;
@@ -27,6 +29,8 @@ export type GoogleBookResult = {
   isbn: string | null;
   thumbnail_url: string | null;
   description: string | null;
+  series_name: string | null;
+  volume_number: number | null;
 };
 
 export type GoogleBookDetail = GoogleBookResult & {
@@ -36,6 +40,7 @@ export type GoogleBookDetail = GoogleBookResult & {
   series_name: string | null;
   volume_number: number | null;
   series_volume_count: number | null;
+  latest_published_date: string | null;
 };
 
 export type CreateBookInput = {
@@ -47,5 +52,7 @@ export type CreateBookInput = {
   description?: string;
   status: BookStatus;
   memo?: string;
+  series_name?: string;
+  volume_number?: number;
   tag_ids?: number[];
 };

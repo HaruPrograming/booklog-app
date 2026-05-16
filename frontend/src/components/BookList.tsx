@@ -74,6 +74,10 @@ export function BookList({ books, onUpdated, onEdit }: Props) {
               {book.author && (
                 <p className="text-xs text-brown-400 mt-1 line-clamp-1">{book.author}</p>
               )}
+              <p className="text-xs text-brown-500 mt-0.5 line-clamp-1">
+                {book.series_name && <span>{book.series_name}　</span>}
+                所持: {book.volume_number ?? 0}巻
+              </p>
             </div>
 
             {book.tags.length > 0 && (
