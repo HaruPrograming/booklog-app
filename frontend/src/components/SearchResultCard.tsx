@@ -4,11 +4,12 @@ type Props = {
   book: GoogleBookResult;
   isSaved: boolean;
   onSave: (book: GoogleBookResult) => void;
+  onDetail: (book: GoogleBookResult) => void;
 };
 
-export function SearchResultCard({ book, isSaved, onSave }: Props) {
+export function SearchResultCard({ book, isSaved, onSave, onDetail }: Props) {
   return (
-    <div className="flex gap-3 p-3 border-b border-gray-100">
+    <div className="flex gap-3 p-3 border-b border-gray-100 cursor-pointer" onClick={() => onDetail(book)}>
       <div className="w-14 h-20 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
         {book.thumbnail_url ? (
           <img
@@ -29,7 +30,7 @@ export function SearchResultCard({ book, isSaved, onSave }: Props) {
       </div>
 
       <button
-        onClick={() => !isSaved && onSave(book)}
+        onClick={(e) => { e.stopPropagation(); if (!isSaved) onSave(book); }}
         disabled={isSaved}
         className={`self-center flex-shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors ${
           isSaved

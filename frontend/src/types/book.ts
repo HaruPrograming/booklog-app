@@ -29,6 +29,15 @@ export type GoogleBookResult = {
   description: string | null;
 };
 
+export type GoogleBookDetail = GoogleBookResult & {
+  average_rating: number | null;
+  ratings_count: number | null;
+  published_date: string | null;
+  series_name: string | null;
+  volume_number: number | null;
+  series_volume_count: number | null;
+};
+
 export type CreateBookInput = {
   google_books_id?: string;
   title: string;
