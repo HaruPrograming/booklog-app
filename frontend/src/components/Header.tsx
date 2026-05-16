@@ -1,4 +1,4 @@
-type View = 'list' | 'form';
+type View = 'list' | 'form' | 'search';
 
 type Props = {
   view: View;
@@ -32,6 +32,16 @@ export function Header({ view, onChangeView }: Props) {
           }`}
         >
           登録
+        </button>
+        <button
+          onClick={() => onChangeView('search')}
+          className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
+            view === 'search'
+              ? 'text-white border-b-2 border-brown-300'
+              : 'text-brown-300 hover:text-brown-100'
+          }`}
+        >
+          検索
         </button>
       </div>
     </header>

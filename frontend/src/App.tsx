@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react';
-import type { Book } from './types/book';
-import { fetchBooks } from './api/books';
+import type { Book, GoogleBookResult } from './types/book';
+import { fetchBooks, createBook } from './api/books';
+import { searchGoogleBooks } from './api/googleBooksSearch';
 import { BookForm } from './components/BookForm';
 import { BookList } from './components/BookList';
 import { Header } from './components/Header';
+import { SearchBar } from './components/SearchBar';
+import { SearchResultCard } from './components/SearchResultCard';
 
-type View = 'list' | 'form';
+type View = 'list' | 'form' | 'search';
 
 function App() {
   const [books, setBooks] = useState<Book[]>([]);
   const [view, setView] = useState<View>('list');
   const [loading, setLoading] = useState(true);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [searchResults, setSearchResults] = useState<GoogleBookResult[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const loadBooks = async () => {
     try {
@@ -42,6 +48,39 @@ function App() {
     if (v === 'list') setEditingBook(null);
   };
 
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    setSearchLoading(true);
+    setView('search');
+    try {
+      const results = await searchGoogleBooks(query);
+      setSearchResults(results);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSearchClear = () => {
+    setSearchResults([]);
+    setSearchQuery('');
+    setView('list');
+  };
+
+  const handleSaveFromSearch = async (book: GoogleBookResult) => {
+    await createBook({
+      google_books_id: book.google_books_id,
+      title: book.title,
+      author: book.author ?? undefined,
+      thumbnail_url: book.thumbnail_url ?? undefined,
+      isbn: book.isbn ?? undefined,
+      description: book.description ?? undefined,
+      status: 'interested',
+    });
+    await loadBooks();
+  };
+
+  const savedGoogleIds = new Set(books.map((b) => b.google_books_id).filter(Boolean) as string[]);
+
   return (
     <div className="min-h-screen bg-brown-50">
       <Header view={view} onChangeView={handleChangeView} />
@@ -53,6 +92,27 @@ function App() {
             editingBook={editingBook}
             onSaved={handleSaved}
           />
+        ) : view === 'search' ? (
+          <>
+            <SearchBar onSearch={handleSearch} onClear={handleSearchClear} />
+            {searchLoading ? (
+              <p className="text-center text-gray-400 py-12">検索中...</p>
+            ) : (
+              <>
+                <p className="text-xs text-gray-500 px-4 pb-2">
+                  「{searchQuery}」の検索結果 {searchResults.length}件
+                </p>
+                {searchResults.map((book) => (
+                  <SearchResultCard
+                    key={book.google_books_id}
+                    book={book}
+                    isSaved={savedGoogleIds.has(book.google_books_id)}
+                    onSave={handleSaveFromSearch}
+                  />
+                ))}
+              </>
+            )}
+          </>
         ) : loading ? (
           <p className="text-center text-brown-400 py-12">読み込み中...</p>
         ) : (

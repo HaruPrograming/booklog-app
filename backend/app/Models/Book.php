@@ -8,9 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Book extends Model
 {
     protected $fillable = [
+        'google_books_id',
         'title',
         'author',
+        'isbn',
         'thumbnail_url',
+        'description',
         'status',
         'memo',
     ];
