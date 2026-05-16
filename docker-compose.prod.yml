@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  frontend:
+    build: ./frontend
+    image: book_log_frontend_prod
+    container_name: book_log_frontend
+    ports:
+      - "80:80"
+    volumes: []
