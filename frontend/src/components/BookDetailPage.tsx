@@ -49,6 +49,11 @@ export function BookDetailPage({ book, isSaved, onSave, onBack }: Props) {
           <div className="flex-1 space-y-1">
             <h1 className="text-base font-bold text-gray-800 leading-tight">{displayData.title}</h1>
             <p className="text-sm text-gray-500">{displayData.author ?? '著者不明'}</p>
+            {displayData.published_date && (
+              <p className="text-xs text-gray-400">
+                {displayData.published_date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$1年$2月$3日').replace(/^(\d{4})-(\d{2})$/, '$1年$2月').replace(/^(\d{4})$/, '$1年')}
+              </p>
+            )}
             {displayData.series_name && (
               <p className="text-xs text-gray-500">
                 {displayData.series_name}

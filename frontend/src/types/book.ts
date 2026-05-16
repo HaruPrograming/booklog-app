@@ -31,14 +31,12 @@ export type GoogleBookResult = {
   description: string | null;
   series_name: string | null;
   volume_number: number | null;
+  published_date: string | null;
 };
 
 export type GoogleBookDetail = GoogleBookResult & {
   average_rating: number | null;
   ratings_count: number | null;
-  published_date: string | null;
-  series_name: string | null;
-  volume_number: number | null;
   series_volume_count: number | null;
   latest_published_date: string | null;
 };
