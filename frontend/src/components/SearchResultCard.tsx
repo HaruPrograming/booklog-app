@@ -27,6 +27,12 @@ export function SearchResultCard({ book, isSaved, onSave, onDetail }: Props) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-800 line-clamp-2">{book.title}</p>
         <p className="text-xs text-gray-500 mt-0.5">{book.author ?? '著者不明'}</p>
+        {(book.series_name || book.volume_number != null) && (
+          <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
+            {book.series_name && <span>{book.series_name}</span>}
+            {book.volume_number != null && <span>{book.series_name ? '　' : ''}第{book.volume_number}巻</span>}
+          </p>
+        )}
       </div>
 
       <button

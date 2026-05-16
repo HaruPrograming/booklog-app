@@ -49,8 +49,16 @@ export function BookDetailPage({ book, isSaved, onSave, onBack }: Props) {
           <div className="flex-1 space-y-1">
             <h1 className="text-base font-bold text-gray-800 leading-tight">{displayData.title}</h1>
             <p className="text-sm text-gray-500">{displayData.author ?? '著者不明'}</p>
-            {detail?.published_date && (
-              <p className="text-xs text-gray-400">発行日: {detail.published_date}</p>
+            {displayData.series_name && (
+              <p className="text-xs text-gray-500">
+                {displayData.series_name}
+                {detail?.series_volume_count != null && detail.series_volume_count > 0 && (
+                  <span>　全{detail.series_volume_count}巻</span>
+                )}
+              </p>
+            )}
+            {detail?.latest_published_date && (
+              <p className="text-xs text-gray-400">最新刊発行日: {detail.latest_published_date}</p>
             )}
           </div>
         </div>

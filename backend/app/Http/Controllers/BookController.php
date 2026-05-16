@@ -24,6 +24,8 @@ class BookController extends Controller
             'thumbnail_url' => 'nullable|url',
             'status'        => 'required|in:interested,reading,completed',
             'memo'          => 'nullable|string',
+            'series_name'   => 'nullable|string|max:255',
+            'volume_number' => 'nullable|integer|min:0',
             'tag_ids'       => 'nullable|array',
             'tag_ids.*'     => 'integer|exists:tags,id',
         ]);
@@ -41,6 +43,8 @@ class BookController extends Controller
             'thumbnail_url' => 'nullable|url',
             'status'        => 'sometimes|required|in:interested,reading,completed',
             'memo'          => 'nullable|string',
+            'series_name'   => 'nullable|string|max:255',
+            'volume_number' => 'nullable|integer|min:0',
             'tag_ids'       => 'nullable|array',
             'tag_ids.*'     => 'integer|exists:tags,id',
         ]);

@@ -85,6 +85,7 @@ function App() {
       thumbnail_url: book.thumbnail_url ?? undefined,
       isbn: book.isbn ?? undefined,
       description: book.description ?? undefined,
+      series_name: book.series_name ?? undefined,
       status: 'interested',
     });
     await loadBooks();
