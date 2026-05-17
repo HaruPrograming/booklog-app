@@ -3,9 +3,10 @@ import { useState } from 'react';
 type Props = {
   onSearch: (query: string) => void;
   onClear: () => void;
+  onBarcodeClick?: () => void;
 };
 
-export function SearchBar({ onSearch, onClear }: Props) {
+export function SearchBar({ onSearch, onClear, onBarcodeClick }: Props) {
   const [query, setQuery] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,13 +35,23 @@ export function SearchBar({ onSearch, onClear }: Props) {
       >
         検索
       </button>
-      <button
-        type="button"
-        onClick={handleClear}
-        className="px-3 py-2 text-gray-500 rounded-lg text-sm border border-gray-300"
-      >
-        ✕
-      </button>
+      {query.trim() ? (
+        <button
+          type="button"
+          onClick={handleClear}
+          className="px-3 py-2 text-gray-500 rounded-lg text-sm border border-gray-300"
+        >
+          ✕
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={onBarcodeClick}
+          className="px-3 py-2 text-gray-500 rounded-lg text-sm border border-gray-300"
+        >
+          📷
+        </button>
+      )}
     </form>
   );
 }
