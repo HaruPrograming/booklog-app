@@ -24,7 +24,7 @@ export function BookDetailPage({ book, isSaved, onSave, onBack }: Props) {
   return (
     <div className="min-h-screen bg-brown-50">
       <div className="sticky top-0 bg-brown-700 border-b border-brown-600 px-4 py-3 flex items-center gap-3">
-        <button onClick={onBack} className="text-brown-200 hover:text-white">
+        <button onClick={onBack} className="text-brown-200 hover:text-white whitespace-nowrap flex-shrink-0">
           ← 戻る
         </button>
         <span className="text-sm font-medium text-white line-clamp-1">{displayData.title}</span>
