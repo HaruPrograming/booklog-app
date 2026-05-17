@@ -19,6 +19,7 @@ class BookController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'google_books_id' => 'nullable|string|max:255',
             'title'         => 'required|string|max:255',
             'author'        => 'nullable|string|max:255',
             'thumbnail_url' => 'nullable|url',
