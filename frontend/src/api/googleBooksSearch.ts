@@ -13,6 +13,15 @@ export async function searchGoogleBooks(
   return res.json();
 }
 
+export async function searchGoogleBooksByIsbn(isbn: string): Promise<GoogleBookResult | null> {
+  const res = await fetch(
+    `${BASE_URL}/books/keyword-search?q=${encodeURIComponent(`isbn:${isbn}`)}&start_index=0`
+  );
+  if (!res.ok) throw new Error('ISBN検索に失敗しました');
+  const data = await res.json();
+  return data.books.length > 0 ? data.books[0] : null;
+}
+
 export async function fetchGoogleBookDetail(id: string): Promise<GoogleBookDetail> {
   const res = await fetch(`${BASE_URL}/google-books/${encodeURIComponent(id)}`);
   if (!res.ok) throw new Error('詳細の取得に失敗しました');
