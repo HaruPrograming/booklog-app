@@ -12,11 +12,18 @@ class GoogleBooksSearchController extends Controller
 
     public function search(Request $request): JsonResponse
     {
-        $request->validate(['q' => 'required|string|min:1|max:200']);
+        $request->validate([
+            'q'           => 'required|string|min:1|max:200',
+            'start_index' => 'integer|min:0',
+        ]);
 
-        $books = $this->googleBooksService->search($request->string('q'));
+        $books = $this->googleBooksService->search(
+            $request->string('q'),
+            20,
+            (int) $request->input('start_index', 0)
+        );
 
-        return response()->json(['books' => $books]);
+        return response()->json(['books' => $books, 'has_more' => count($books) === 20]);
     }
 
     public function show(string $id): JsonResponse

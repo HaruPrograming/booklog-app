@@ -19,6 +19,8 @@ function App() {
   const [searchResults, setSearchResults] = useState<GoogleBookResult[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchHasMore, setSearchHasMore] = useState(false);
+  const [loadMoreLoading, setLoadMoreLoading] = useState(false);
   const [selectedBook, setSelectedBook] = useState<GoogleBookResult | null>(null);
 
   const loadBooks = async () => {
@@ -53,18 +55,32 @@ function App() {
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     setSearchLoading(true);
+    setSearchHasMore(false);
     setView('search');
     try {
-      const results = await searchGoogleBooks(query);
-      setSearchResults(results);
+      const { books, has_more } = await searchGoogleBooks(query, 0);
+      setSearchResults(books);
+      setSearchHasMore(has_more);
     } finally {
       setSearchLoading(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    setLoadMoreLoading(true);
+    try {
+      const { books, has_more } = await searchGoogleBooks(searchQuery, searchResults.length);
+      setSearchResults((prev) => [...prev, ...books]);
+      setSearchHasMore(has_more);
+    } finally {
+      setLoadMoreLoading(false);
     }
   };
 
   const handleSearchClear = () => {
     setSearchResults([]);
     setSearchQuery('');
+    setSearchHasMore(false);
     setView('list');
   };
 
@@ -85,6 +101,7 @@ function App() {
       thumbnail_url: book.thumbnail_url ?? undefined,
       isbn: book.isbn ?? undefined,
       description: book.description ?? undefined,
+      series_name: book.series_name ?? undefined,
       status: 'interested',
     });
     await loadBooks();
@@ -95,6 +112,14 @@ function App() {
   return (
     <div className="min-h-screen bg-brown-50">
       {view !== 'detail' && <Header view={view} onChangeView={handleChangeView} />}
+
+      {view === 'search' && (
+        <div className="sticky top-[100px] z-10 bg-brown-50 border-b border-gray-200">
+          <div className="max-w-sm mx-auto">
+            <SearchBar onSearch={handleSearch} onClear={handleSearchClear} />
+          </div>
+        </div>
+      )}
 
       {view === 'detail' && selectedBook && (
         <BookDetailPage
@@ -114,7 +139,6 @@ function App() {
           />
         ) : view === 'search' ? (
           <>
-            <SearchBar onSearch={handleSearch} onClear={handleSearchClear} />
             {searchLoading ? (
               <p className="text-center text-gray-400 py-12">検索中...</p>
             ) : (
@@ -131,6 +155,17 @@ function App() {
                     onDetail={handleOpenDetail}
                   />
                 ))}
+                {searchHasMore && (
+                  <div className="px-4 py-4 text-center">
+                    <button
+                      onClick={handleLoadMore}
+                      disabled={loadMoreLoading}
+                      className="w-full py-2.5 rounded-lg border border-brown-300 text-sm text-brown-600 hover:bg-brown-100 disabled:opacity-50 transition-colors"
+                    >
+                      {loadMoreLoading ? '読み込み中...' : 'もっと見る'}
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </>

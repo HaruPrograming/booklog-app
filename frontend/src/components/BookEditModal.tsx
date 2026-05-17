@@ -135,7 +135,7 @@ export function BookEditModal({ book, onClose, onUpdated }: Props) {
                   onFocus={() => setShowSuggestions(true)}
                   onBlur={() => setShowSuggestions(false)}
                   placeholder="新しいタグを追加"
-                  className="w-full border border-brown-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
+                  className="w-full border border-brown-200 rounded-xl px-3 py-2 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
                 />
                 {showSuggestions && (() => {
                   const q = newTagName.trim().toLowerCase();

@@ -16,6 +16,8 @@ class Book extends Model
         'description',
         'status',
         'memo',
+        'series_name',
+        'volume_number',
     ];
 
     public function tags(): BelongsToMany

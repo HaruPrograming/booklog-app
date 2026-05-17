@@ -27,6 +27,7 @@ export function BookForm({ editingBook, onSaved }: Props) {
   const [isbnError, setIsbnError] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState(editingBook?.thumbnail_url ?? '');
   const [memo, setMemo] = useState(editingBook?.memo ?? '');
+  const [volumeNumber, setVolumeNumber] = useState(editingBook?.volume_number?.toString() ?? '0');
 
   const isEditing = editingBook != null;
 
@@ -79,6 +80,7 @@ export function BookForm({ editingBook, onSaved }: Props) {
     setLoading(true);
     setError('');
     try {
+      const parsedVolume = volumeNumber !== '' ? parseInt(volumeNumber, 10) : 0;
       if (isEditing) {
         await updateBook(editingBook.id, {
           title: title.trim(),
@@ -86,6 +88,7 @@ export function BookForm({ editingBook, onSaved }: Props) {
           thumbnail_url: thumbnailUrl || undefined,
           status,
           memo: memo.trim() || undefined,
+          volume_number: parsedVolume,
           tag_ids: selectedTagIds,
         });
       } else {
@@ -95,6 +98,7 @@ export function BookForm({ editingBook, onSaved }: Props) {
           thumbnail_url: thumbnailUrl || undefined,
           status,
           memo: memo.trim() || undefined,
+          volume_number: parsedVolume,
           tag_ids: selectedTagIds.length > 0 ? selectedTagIds : undefined,
         };
         await createBook(input);
@@ -167,22 +171,41 @@ export function BookForm({ editingBook, onSaved }: Props) {
         />
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-brown-700">著者</label>
-        <input
-          type="text"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          placeholder="著者名"
-          className="border border-brown-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
-        />
+      <div className="flex gap-2">
+        <div className="flex flex-col gap-1 flex-1">
+          <label className="text-sm font-medium text-brown-700">著者</label>
+          <input
+            type="text"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            placeholder="著者名"
+            className="border border-brown-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
+          />
+        </div>
+        <div className="flex flex-col gap-1 w-24">
+          <label className="text-sm font-medium text-brown-700">所持巻数</label>
+          <input
+            type="number"
+            value={volumeNumber}
+            onChange={(e) => setVolumeNumber(e.target.value)}
+            placeholder="1"
+            min={0}
+            className="border border-brown-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-brown-700">ステータス</label>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value as BookStatus)}
+          onChange={(e) => {
+            const newStatus = e.target.value as BookStatus;
+            setStatus(newStatus);
+            if (newStatus === 'reading' && (volumeNumber === '0' || volumeNumber === '')) {
+              setVolumeNumber('1');
+            }
+          }}
           className="border border-brown-200 rounded-xl px-4 py-3 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
         >
           <option value="interested">気になる</option>
@@ -218,7 +241,7 @@ export function BookForm({ editingBook, onSaved }: Props) {
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setShowSuggestions(false)}
               placeholder="新しいタグを追加"
-              className="w-full border border-brown-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
+              className="w-full border border-brown-200 rounded-xl px-3 py-2 text-base bg-white focus:outline-none focus:ring-2 focus:ring-brown-400"
             />
             {showSuggestions && (() => {
               const q = newTagName.trim().toLowerCase();
