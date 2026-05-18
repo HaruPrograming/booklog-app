@@ -9,10 +9,28 @@ import { BookDetailPage } from './components/BookDetailPage';
 import { Header } from './components/Header';
 import { SearchBar } from './components/SearchBar';
 import { SearchResultCard } from './components/SearchResultCard';
+import { useAuth } from './contexts/AuthContext';
+import LoginPage from './components/LoginPage';
 
 type View = 'list' | 'form' | 'search' | 'detail';
 
 function App() {
+  const { user, loading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-400">読み込み中...</p>
+      </div>
+    );
+  }
+
+  if (!user) return <LoginPage />;
+
+  return <AppContent />;
+}
+
+function AppContent() {
   const [books, setBooks] = useState<Book[]>([]);
   const [view, setView] = useState<View>('list');
   const [loading, setLoading] = useState(true);
@@ -217,3 +235,4 @@ function App() {
 }
 
 export default App;
+
