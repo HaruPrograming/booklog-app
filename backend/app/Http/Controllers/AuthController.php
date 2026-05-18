@@ -28,17 +28,19 @@ class AuthController extends Controller
         );
 
         $token = $user->createToken('auth_token')->plainTextToken;
-
         $frontendUrl = config('app.frontend_url');
 
-        return redirect("{$frontendUrl}?token={$token}");
+        return redirect($frontendUrl)->withCookie(
+            cookie('auth_token', $token, 60 * 24 * 7, '/', null, false, true, false, 'lax')
+        );
     }
 
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'logged out']);
+        return response()->json(['message' => 'logged out'])
+            ->withCookie(cookie()->forget('auth_token'));
     }
 
     public function me(Request $request): JsonResponse
