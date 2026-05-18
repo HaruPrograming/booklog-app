@@ -19,16 +19,18 @@ class BookController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
+            'title'          => 'required|string|max:255',
+            'author'         => 'nullable|string|max:255',
+            'thumbnail_url'  => 'nullable|url',
+            'status'         => 'required|in:interested,reading,completed',
+            'memo'           => 'nullable|string',
             'google_books_id' => 'nullable|string|max:255',
-            'title'         => 'required|string|max:255',
-            'author'        => 'nullable|string|max:255',
-            'thumbnail_url' => 'nullable|url',
-            'status'        => 'required|in:interested,reading,completed',
-            'memo'          => 'nullable|string',
-            'series_name'   => 'nullable|string|max:255',
-            'volume_number' => 'nullable|integer|min:0',
-            'tag_ids'       => 'nullable|array',
-            'tag_ids.*'     => 'integer|exists:tags,id',
+            'isbn'           => 'nullable|string|max:20',
+            'description'    => 'nullable|string',
+            'series_name'    => 'nullable|string|max:255',
+            'volume_number'  => 'nullable|integer|min:0',
+            'tag_ids'        => 'nullable|array',
+            'tag_ids.*'      => 'integer|exists:tags,id',
         ]);
 
         $book = $this->bookService->create($validated, $request->user()->id);
@@ -43,15 +45,18 @@ class BookController extends Controller
         }
 
         $validated = $request->validate([
-            'title'         => 'sometimes|required|string|max:255',
-            'author'        => 'nullable|string|max:255',
-            'thumbnail_url' => 'nullable|url',
-            'status'        => 'sometimes|required|in:interested,reading,completed',
-            'memo'          => 'nullable|string',
-            'series_name'   => 'nullable|string|max:255',
-            'volume_number' => 'nullable|integer|min:0',
-            'tag_ids'       => 'nullable|array',
-            'tag_ids.*'     => 'integer|exists:tags,id',
+            'title'          => 'sometimes|required|string|max:255',
+            'author'         => 'nullable|string|max:255',
+            'thumbnail_url'  => 'nullable|url',
+            'status'         => 'sometimes|required|in:interested,reading,completed',
+            'memo'           => 'nullable|string',
+            'google_books_id' => 'nullable|string|max:255',
+            'isbn'           => 'nullable|string|max:20',
+            'description'    => 'nullable|string',
+            'series_name'    => 'nullable|string|max:255',
+            'volume_number'  => 'nullable|integer|min:0',
+            'tag_ids'        => 'nullable|array',
+            'tag_ids.*'      => 'integer|exists:tags,id',
         ]);
 
         $book = $this->bookService->update($book, $validated);

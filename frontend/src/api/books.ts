@@ -11,7 +11,7 @@ export async function fetchBooks(): Promise<Book[]> {
 export async function createBook(input: CreateBookInput): Promise<Book> {
   const res = await fetch(`${API_BASE}/books`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(input),
   });
