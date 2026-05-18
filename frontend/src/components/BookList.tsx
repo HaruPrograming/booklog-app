@@ -47,6 +47,20 @@ export function BookList({ books, onUpdated, onEdit }: Props) {
             key={book.id}
             className="bg-white rounded-2xl p-3 flex flex-col gap-2 shadow-sm border border-brown-100"
           >
+            <div className="w-full h-32 rounded-xl overflow-hidden bg-brown-50">
+              {book.thumbnail_url ? (
+                <img
+                  src={book.thumbnail_url}
+                  alt={book.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-brown-200">
+                  <span className="text-3xl">📚</span>
+                  <span className="text-xs">No Image</span>
+                </div>
+              )}
+            </div>
             <div>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLOR[book.status]}`}>
                 {STATUS_LABEL[book.status]}
@@ -60,6 +74,10 @@ export function BookList({ books, onUpdated, onEdit }: Props) {
               {book.author && (
                 <p className="text-xs text-brown-400 mt-1 line-clamp-1">{book.author}</p>
               )}
+              <p className="text-xs text-brown-500 mt-0.5 line-clamp-1">
+                {book.series_name && <span>{book.series_name}　</span>}
+                所持: {book.volume_number ?? 0}巻
+              </p>
             </div>
 
             {book.tags.length > 0 && (

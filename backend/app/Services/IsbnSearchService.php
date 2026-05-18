@@ -8,7 +8,13 @@ class IsbnSearchService
 {
     public function search(string $isbn): ?array
     {
-        return $this->searchOpenBd($isbn) ?? $this->searchGoogleBooks($isbn);
+        $result = $this->searchOpenBd($isbn) ?? $this->searchGoogleBooks($isbn);
+
+        if ($result !== null && $result['thumbnail_url'] === null) {
+            $result['thumbnail_url'] = $this->fetchGoogleBooksThumbnail($isbn, $result['title'] ?? null);
+        }
+
+        return $result;
     }
 
     private function searchOpenBd(string $isbn): ?array
@@ -39,11 +45,52 @@ class IsbnSearchService
         ];
     }
 
+    private function googleBooksParams(array $extra = []): array
+    {
+        $params = array_merge(['q' => ''], $extra);
+        $key = config('services.google_books.key');
+        if ($key) {
+            $params['key'] = $key;
+        }
+        return $params;
+    }
+
+    private function fetchGoogleBooksThumbnail(string $isbn, ?string $title = null): ?string
+    {
+        $response = Http::get('https://www.googleapis.com/books/v1/volumes',
+            $this->googleBooksParams(['q' => "isbn:{$isbn}"])
+        );
+
+        if ($response->successful()) {
+            $thumbnail = $response->json('items.0.volumeInfo.imageLinks.thumbnail');
+            if ($thumbnail) {
+                return str_replace('http://', 'https://', $thumbnail);
+            }
+        }
+
+        if ($title) {
+            $response = Http::get('https://www.googleapis.com/books/v1/volumes',
+                $this->googleBooksParams(['q' => "intitle:{$title}", 'maxResults' => 5])
+            );
+
+            if ($response->successful()) {
+                foreach ($response->json('items') ?? [] as $item) {
+                    $thumbnail = $item['volumeInfo']['imageLinks']['thumbnail'] ?? null;
+                    if ($thumbnail) {
+                        return str_replace('http://', 'https://', $thumbnail);
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     private function searchGoogleBooks(string $isbn): ?array
     {
-        $response = Http::get('https://www.googleapis.com/books/v1/volumes', [
-            'q' => "isbn:{$isbn}",
-        ]);
+        $response = Http::get('https://www.googleapis.com/books/v1/volumes',
+            $this->googleBooksParams(['q' => "isbn:{$isbn}"])
+        );
 
         if (!$response->successful()) {
             return null;
@@ -66,7 +113,7 @@ class IsbnSearchService
         return [
             'title'         => $info['title'],
             'author'        => !empty($authors) ? implode(' ', $authors) : null,
-            'thumbnail_url' => $info['imageLinks']['thumbnail'] ?? null,
+            'thumbnail_url' => isset($info['imageLinks']['thumbnail']) ? str_replace('http://', 'https://', $info['imageLinks']['thumbnail']) : null,
             'description'   => $info['description'] ?? null,
         ];
     }

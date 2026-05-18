@@ -1,17 +1,48 @@
 import { useEffect, useState } from 'react';
-import type { Book } from './types/book';
-import { fetchBooks } from './api/books';
+import type { Book, GoogleBookResult } from './types/book';
+import { fetchBooks, createBook } from './api/books';
+import { searchGoogleBooks, searchGoogleBooksByIsbn } from './api/googleBooksSearch';
+import { BarcodeScanner } from './components/BarcodeScanner';
 import { BookForm } from './components/BookForm';
 import { BookList } from './components/BookList';
+import { BookDetailPage } from './components/BookDetailPage';
 import { Header } from './components/Header';
+import { SearchBar } from './components/SearchBar';
+import { SearchResultCard } from './components/SearchResultCard';
+import { useAuth } from './contexts/AuthContext';
+import LoginPage from './components/LoginPage';
 
-type View = 'list' | 'form';
+type View = 'list' | 'form' | 'search' | 'detail';
 
 function App() {
+  const { user, loading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-400">読み込み中...</p>
+      </div>
+    );
+  }
+
+  if (!user) return <LoginPage />;
+
+  return <AppContent />;
+}
+
+function AppContent() {
   const [books, setBooks] = useState<Book[]>([]);
   const [view, setView] = useState<View>('list');
   const [loading, setLoading] = useState(true);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [searchResults, setSearchResults] = useState<GoogleBookResult[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchHasMore, setSearchHasMore] = useState(false);
+  const [loadMoreLoading, setLoadMoreLoading] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<GoogleBookResult | null>(null);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const [barcodeError, setBarcodeError] = useState('');
 
   const loadBooks = async () => {
     try {
@@ -42,17 +73,157 @@ function App() {
     if (v === 'list') setEditingBook(null);
   };
 
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    setSearchLoading(true);
+    setSearchHasMore(false);
+    setView('search');
+    try {
+      const { books, has_more } = await searchGoogleBooks(query, 0);
+      setSearchResults(books);
+      setSearchHasMore(has_more);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    setLoadMoreLoading(true);
+    try {
+      const { books, has_more } = await searchGoogleBooks(searchQuery, searchResults.length);
+      setSearchResults((prev) => [...prev, ...books]);
+      setSearchHasMore(has_more);
+    } finally {
+      setLoadMoreLoading(false);
+    }
+  };
+
+  const handleSearchClear = () => {
+    setSearchResults([]);
+    setSearchQuery('');
+    setSearchHasMore(false);
+  };
+
+  const handleOpenDetail = (book: GoogleBookResult) => {
+    setSelectedBook(book);
+    setView('detail');
+  };
+
+  const handleBackFromDetail = () => {
+    setView('search');
+  };
+
+  const handleBarcodeFromSearch = async (isbn: string) => {
+    setShowBarcodeScanner(false);
+    setBarcodeError('');
+    setSearchLoading(true);
+    try {
+      const book = await searchGoogleBooksByIsbn(isbn);
+      if (book === null) {
+        setBarcodeError('本が見つかりませんでした');
+      } else {
+        handleOpenDetail(book);
+      }
+    } catch {
+      setBarcodeError('検索に失敗しました。もう一度お試しください。');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSaveFromSearch = async (book: GoogleBookResult) => {
+    await createBook({
+      google_books_id: book.google_books_id,
+      title: book.title,
+      author: book.author ?? undefined,
+      thumbnail_url: book.thumbnail_url ?? undefined,
+      isbn: book.isbn ?? undefined,
+      description: book.description ?? undefined,
+      series_name: book.series_name ?? undefined,
+      status: 'interested',
+    });
+    await loadBooks();
+  };
+
+  const savedGoogleIds = new Set(books.map((b) => b.google_books_id).filter(Boolean) as string[]);
+
   return (
     <div className="min-h-screen bg-brown-50">
-      <Header view={view} onChangeView={handleChangeView} />
+      {view !== 'detail' && <Header view={view} onChangeView={handleChangeView} />}
+
+      {view === 'search' && (
+        <div className="sticky top-[100px] z-10 bg-brown-50 border-b border-gray-200">
+          <div className="max-w-sm mx-auto">
+            <SearchBar
+              onSearch={handleSearch}
+              onClear={handleSearchClear}
+              onBarcodeClick={() => { setShowBarcodeScanner(true); setBarcodeError(''); }}
+            />
+          </div>
+        </div>
+      )}
+
+      {view === 'detail' && selectedBook && (
+        <BookDetailPage
+          book={selectedBook}
+          isSaved={savedGoogleIds.has(selectedBook.google_books_id)}
+          onSave={handleSaveFromSearch}
+          onBack={handleBackFromDetail}
+        />
+      )}
 
       <main className="max-w-sm mx-auto">
-        {view === 'form' ? (
+        {view === 'detail' ? null : view === 'form' ? (
           <BookForm
             key={editingBook?.id ?? 'new'}
             editingBook={editingBook}
             onSaved={handleSaved}
           />
+        ) : view === 'search' ? (
+          <>
+            {showBarcodeScanner && (
+              <div className="px-4 pt-4">
+                <BarcodeScanner
+                  onDetect={handleBarcodeFromSearch}
+                  onClose={() => { setShowBarcodeScanner(false); setBarcodeError(''); }}
+                />
+              </div>
+            )}
+            {barcodeError && (
+              <p className="text-center text-red-500 text-sm px-4 pt-3">{barcodeError}</p>
+            )}
+            {searchLoading ? (
+              <p className="text-center text-gray-400 py-12">検索中...</p>
+            ) : (
+              <>
+                {searchQuery && (
+                <p className="text-xs text-gray-500 px-4 pb-2">
+                  「{searchQuery}」の検索結果 {searchResults.length}件
+                </p>
+                )}
+                {searchResults.map((book) => (
+                  <SearchResultCard
+                    key={book.google_books_id}
+                    book={book}
+                    isSaved={savedGoogleIds.has(book.google_books_id)}
+                    onSave={handleSaveFromSearch}
+                    onDetail={handleOpenDetail}
+                  />
+                ))}
+                {searchHasMore && (
+                  <div className="px-4 py-4 text-center">
+                    <button
+                      onClick={handleLoadMore}
+                      disabled={loadMoreLoading}
+                      className="w-full py-2.5 rounded-lg border border-brown-300 text-sm text-brown-600 hover:bg-brown-100 disabled:opacity-50 transition-colors"
+                    >
+                      {loadMoreLoading ? '読み込み中...' : 'もっと見る'}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </>
         ) : loading ? (
           <p className="text-center text-brown-400 py-12">読み込み中...</p>
         ) : (
@@ -64,3 +235,4 @@ function App() {
 }
 
 export default App;
+
