@@ -7,15 +7,16 @@ use Illuminate\Database\Eloquent\Collection;
 
 class BookService
 {
-    public function getAll(): Collection
+    public function getAll(int $userId): Collection
     {
-        return Book::with('tags')->latest()->get();
+        return Book::with('tags')->where('user_id', $userId)->latest()->get();
     }
 
-    public function create(array $data): Book
+    public function create(array $data, int $userId): Book
     {
         $tagIds = $data['tag_ids'] ?? [];
         unset($data['tag_ids']);
+        $data['user_id'] = $userId;
 
         $book = Book::create($data);
 
