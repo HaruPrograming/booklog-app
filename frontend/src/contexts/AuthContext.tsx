@@ -23,10 +23,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    const timer = setTimeout(() => controller.abort(), 15000);
 
-    fetch(`${API_BASE}/auth/me`, { credentials: 'include', signal: controller.signal })
-      .then((res) => (res.ok ? res.json() : null))
+    fetch(`${API_BASE}/auth/me`, { credentials: 'include', signal: controller.signal, headers: { Accept: 'application/json' } })
+      .then((res) => res.ok ? res.json() : null)
       .then((data) => {
         if (data) setUser(data);
       })
