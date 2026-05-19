@@ -1,6 +1,6 @@
 import type { GoogleBookDetail, GoogleBookResult } from '../types/book';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 export async function searchGoogleBooks(
   query: string,
@@ -11,6 +11,15 @@ export async function searchGoogleBooks(
   );
   if (!res.ok) throw new Error('検索に失敗しました');
   return res.json();
+}
+
+export async function searchGoogleBooksByIsbn(isbn: string): Promise<GoogleBookResult | null> {
+  const res = await fetch(
+    `${BASE_URL}/books/keyword-search?q=${encodeURIComponent(`isbn:${isbn}`)}&start_index=0`
+  );
+  if (!res.ok) throw new Error('ISBN検索に失敗しました');
+  const data = await res.json();
+  return data.books.length > 0 ? data.books[0] : null;
 }
 
 export async function fetchGoogleBookDetail(id: string): Promise<GoogleBookDetail> {

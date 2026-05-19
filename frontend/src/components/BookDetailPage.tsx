@@ -24,7 +24,7 @@ export function BookDetailPage({ book, isSaved, onSave, onBack }: Props) {
   return (
     <div className="min-h-screen bg-brown-50">
       <div className="sticky top-0 bg-brown-700 border-b border-brown-600 px-4 py-3 flex items-center gap-3">
-        <button onClick={onBack} className="text-brown-200 hover:text-white">
+        <button onClick={onBack} className="text-brown-200 hover:text-white whitespace-nowrap flex-shrink-0">
           ← 戻る
         </button>
         <span className="text-sm font-medium text-white line-clamp-1">{displayData.title}</span>
@@ -76,20 +76,21 @@ export function BookDetailPage({ book, isSaved, onSave, onBack }: Props) {
           <>
             {(detail.average_rating !== null || detail.ratings_count !== null) && (
               <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <p className="text-xs font-medium text-gray-500 mb-1">みんなの評価</p>
-                <div className="flex items-center gap-2">
-                  {detail.average_rating !== null && (
-                    <span className="text-lg font-bold text-amber-500">
-                      {'★'.repeat(Math.round(detail.average_rating))}
-                      {'☆'.repeat(5 - Math.round(detail.average_rating))}
-                    </span>
-                  )}
-                  <span className="text-sm text-gray-600">
-                    {detail.average_rating?.toFixed(1) ?? '-'} / 5
+                <p className="text-xs font-medium text-gray-500 mb-2">みんなの評価</p>
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl font-bold text-amber-500">
+                    {detail.average_rating?.toFixed(1) ?? '-'}
                   </span>
-                  {detail.ratings_count !== null && (
-                    <span className="text-xs text-gray-400">({detail.ratings_count}件)</span>
-                  )}
+                  <div className="space-y-0.5">
+                    <div className="text-amber-400">
+                      {detail.average_rating !== null
+                        ? '★'.repeat(Math.round(detail.average_rating)) + '☆'.repeat(5 - Math.round(detail.average_rating))
+                        : '☆☆☆☆☆'}
+                    </div>
+                    {detail.ratings_count !== null && (
+                      <p className="text-xs text-gray-400">{detail.ratings_count.toLocaleString()}件の評価</p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -119,6 +120,28 @@ export function BookDetailPage({ book, isSaved, onSave, onBack }: Props) {
             )}
           </>
         )}
+
+        <div className="bg-white rounded-lg p-3 border border-gray-100">
+          <p className="text-xs font-medium text-gray-500 mb-2">購入・詳細を確認</p>
+          <div className="flex gap-2">
+            <a
+              href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(displayData.title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 py-2 text-center text-xs font-medium rounded-lg bg-amber-50 border border-amber-300 text-amber-700 hover:bg-amber-100 transition-colors"
+            >
+              Amazon で見る
+            </a>
+            <a
+              href={`https://books.rakuten.co.jp/search?sitem=${encodeURIComponent(displayData.title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 py-2 text-center text-xs font-medium rounded-lg bg-red-50 border border-red-300 text-red-700 hover:bg-red-100 transition-colors"
+            >
+              楽天ブックスで見る
+            </a>
+          </div>
+        </div>
 
         <button
           onClick={() => !isSaved && onSave(book)}

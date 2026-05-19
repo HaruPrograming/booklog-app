@@ -1,38 +1,41 @@
+version: "3.8"
+
 services:
   app:
     build: ./docker/php
     container_name: book_log_laravel_app
     volumes:
       - ./backend:/var/www/html
-    ports:
-      - "8000:8000"
+      - vendor_data:/var/www/html/vendor
     depends_on:
       - db
-    command: php artisan serve --host=0.0.0.0 --port=8000
+    env_file:
+      - ./backend/.env
+    command: sh -c "[ -f /var/www/html/vendor/autoload.php ] || composer install --no-interaction --no-dev && php artisan config:cache && php artisan route:cache && php-fpm"
 
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        - VITE_API_BASE=/api
-        - VITE_API_BASE_URL=/api
-    image: book_log_frontend_prod
-    container_name: book_log_frontend
+  nginx:
+    image: nginx:alpine
+    container_name: book_log_nginx
     ports:
-      - 81:80
+      - "80:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./frontend/dist:/var/www/frontend
+      - ./docker/nginx/nginx.prod.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
 
   db:
     image: mysql:8.0
     container_name: book_log_mysql_db
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: app_db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_DATABASE:-app_db}
+      MYSQL_USER: ${DB_USERNAME:-user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-password}
     volumes:
       - db_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
 
 volumes:
+  vendor_data:
   db_data:
