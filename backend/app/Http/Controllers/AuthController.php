@@ -16,7 +16,12 @@ class AuthController extends Controller
 
     public function handleGoogleCallback(): \Illuminate\Http\RedirectResponse
     {
-        $googleUser = Socialite::driver('google')->stateless()->user();
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+        } catch (\Exception $e) {
+            \Log::error('handleGoogleCallback: socialite error', ['message' => $e->getMessage()]);
+            throw $e;
+        }
 
         $user = User::updateOrCreate(
             ['google_id' => $googleUser->getId()],
@@ -31,7 +36,7 @@ class AuthController extends Controller
         $frontendUrl = config('app.frontend_url');
 
         return redirect($frontendUrl)->withCookie(
-            cookie('auth_token', $token, 60 * 24 * 7, '/', null, false, true, false, 'lax')
+            cookie('auth_token', $token, 60 * 24 * 7, '/', null, app()->isProduction(), true, false, 'lax')
         );
     }
 
